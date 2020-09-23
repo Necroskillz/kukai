@@ -43,7 +43,7 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-  background-color: #5963FF;
+  background-color: #00AACC;
   -webkit-transform: translateX(1.5rem);
   -ms-transform: translateX(1.5rem);
   transform: translateX(1.5rem);

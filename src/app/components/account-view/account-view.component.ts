@@ -9,6 +9,7 @@ import * as copy from 'copy-to-clipboard';
 import { filter } from 'rxjs/internal/operators/filter';
 import { CoordinatorService } from '../../services/coordinator/coordinator.service';
 import { Constants } from '../../constants';
+import { validateDomainName, DomainNameValidationResult } from '@tezos-domains/core';
 
 @Component({
   selector: 'app-account-view',
@@ -27,7 +28,7 @@ export class AccountViewComponent implements OnInit {
     private router: Router,
     private coordinatorService: CoordinatorService
   ) {}
-    trigger = true;
+  trigger = true;
   ngOnInit(): void {
     if (!this.walletService.wallet) {
       this.router.navigate(['']);
@@ -37,15 +38,13 @@ export class AccountViewComponent implements OnInit {
       if (this.walletService.addressExists(address)) {
         this.account = this.walletService.wallet.getAccount(address);
       }
-      this.router.events
-        .pipe(filter((evt) => evt instanceof NavigationEnd))
-        .subscribe(() => {
-          address = this.route.snapshot.paramMap.get('address');
-          if (this.walletService.wallet && this.walletService.addressExists(address)) {
-            this.account = this.walletService.wallet.getAccount(address);
-          }
-        });
-        setInterval(() => this.trigger = !this.trigger, 10 * 1000);
+      this.router.events.pipe(filter(evt => evt instanceof NavigationEnd)).subscribe(() => {
+        address = this.route.snapshot.paramMap.get('address');
+        if (this.walletService.wallet && this.walletService.addressExists(address)) {
+          this.account = this.walletService.wallet.getAccount(address);
+        }
+      });
+      setInterval(() => (this.trigger = !this.trigger), 10 * 1000);
     }
   }
   getType(transaction: any): string {
@@ -92,11 +91,16 @@ export class AccountViewComponent implements OnInit {
     }
     return '';
   }
+
+  getTooltip(transaction: any) {
+    const counterparty = this.getCounterparty(transaction);
+
+    return counterparty.slice(0, 7) + '...' + counterparty.slice(-4);
+  }
+
   copy(account: Account) {
     copy(account.address);
-    const copyToClipboard = this.translate.instant(
-      'OVERVIEWCOMPONENT.COPIEDTOCLIPBOARD'
-    );
+    const copyToClipboard = this.translate.instant('OVERVIEWCOMPONENT.COPIEDTOCLIPBOARD');
     this.messageService.add(account.address + ' ' + copyToClipboard, 5);
   }
   explorerURL(hash: string) {
@@ -104,4 +108,3 @@ export class AccountViewComponent implements OnInit {
     return baseURL + hash;
   }
 }
-

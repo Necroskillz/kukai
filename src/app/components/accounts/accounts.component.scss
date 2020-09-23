@@ -4,7 +4,7 @@
     display: flex;
     justify-content: flex-start;
     flex-direction: column;
-    background: #5963FF;
+    background: #00AACC;
 }
 #wrapper {
     width: 100%;
@@ -45,6 +45,14 @@ img {
     background-color: #EAEBF9 !important;
     cursor: pointer !important;
 }
+.account-info {
+  display: flex;
+  flex-direction: column;
+}
+.address-row {
+  display: flex;
+  flex-direction: row;
+}
 .account-icon {
     margin-left: 1.5rem;
     margin-top: 0.5rem;
@@ -52,8 +60,6 @@ img {
 }
 .copy-icon {
     padding-left: 0.5rem;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
 }
 span {
     font-style: normal;

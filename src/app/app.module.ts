@@ -8,6 +8,7 @@ import { AppRoutingModule } from './app-routing.module';
 // From Angular Material
 import { MatSortModule } from '@angular/material/sort';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 // For translation
@@ -16,7 +17,6 @@ import {TranslateHttpLoader} from '@ngx-translate/http-loader';
 
 // External libraries
 import { ComponentLoaderFactory } from 'ngx-bootstrap/component-loader';
-import { ModalModule, AlertModule, ProgressbarModule, ButtonsModule, BsDropdownModule, TabsModule } from 'ngx-bootstrap';
 import { CollapseModule } from 'ngx-bootstrap/collapse';
 import { AppComponent } from './app.component';
 
@@ -24,6 +24,13 @@ import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
 import { PERFECT_SCROLLBAR_CONFIG } from 'ngx-perfect-scrollbar';
 import { PerfectScrollbarConfigInterface } from 'ngx-perfect-scrollbar';
 
+import { ModalModule } from 'ngx-bootstrap/modal';
+import { AlertModule } from 'ngx-bootstrap/alert';
+import { ProgressbarModule } from 'ngx-bootstrap/progressbar';
+import { ButtonsModule } from 'ngx-bootstrap/buttons';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { TabsModule } from 'ngx-bootstrap/tabs';
+import { TooltipModule } from 'ngx-bootstrap/tooltip';
 
 const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
   suppressScrollX: true
@@ -73,6 +80,7 @@ import { SpinnerComponent } from './components/spinner/spinner.component';
 import { AgreementComponent } from './components/agreement/agreement.component';
 import { TermsOfUseComponent } from './components/agreement/terms-of-use/terms-of-use.component';
 import { PrivacyPolicyComponent } from './components/agreement/privacy-policy/privacy-policy.component';
+import { DomainOrAddressPipe } from './pipes/domain-or-address.pipe';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -103,6 +111,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     DelegatorNamePipe,
     TruncatePipe,
     TimeAgoPipe,
+    DomainOrAddressPipe,
+
     ConnectLedgerComponent,
     FooterComponent,
     AccountsComponent,
@@ -121,9 +131,11 @@ export function HttpLoaderFactory(http: HttpClient) {
     FormsModule,
     AppRoutingModule,
     HttpClientModule,
+    MatTooltipModule,
     CollapseModule.forRoot(),
     ModalModule.forRoot(),
     AlertModule.forRoot(),
+    TooltipModule.forRoot(),
     PerfectScrollbarModule,
     ProgressbarModule.forRoot(),
     ButtonsModule.forRoot(),

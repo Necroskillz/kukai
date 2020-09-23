@@ -28,12 +28,14 @@
           {{ getTotalCost(true) }}</p>
       </div>
       <div class="group">
-        <label>From address</label>
+        <label>From</label>
+        <p class="mb-1" *ngIf="activeAccount.domain">{{ activeAccount.domain }}</p>
         <p>{{ activeAccount.address }}</p>
       </div>
       <div *ngIf="!this.isMultipleDestinations" class="group">
-        <label>To address</label>
-        <input type="text" class="text" (input)="updateDefaultValues()" (change)="validateReceiverAddress()" [(ngModel)]="toPkh">
+        <label>To</label>
+        <input type="text" class="text" (input)="updateTo()" (change)="validateReceiverAddress()" [(ngModel)]="to">
+        <p class="mt-1 mb-0 ml-2" style="font-size: 12px" *ngIf="destination.domain && destination.pkh">Resolved to: {{ destination.pkh }}</p>
       </div>
       <div *ngIf="this.isMultipleDestinations" class="group">
         <label>Addresses and amounts <span class="batchInfo">{{ batchSpace() }}</span></label>
@@ -84,8 +86,11 @@
         <p class="preview">
           From — {{ activeAccount.address }}
         </p>
+        <p class="preview" *ngIf="transactions[0].toDomain">
+          To domain — {{ transactions[0].toDomain }}
+        </p>
         <p class="preview">
-          To — {{ transactions[0].to }}
+          To pkh — {{ transactions[0].to }}
         </p>
         <p class="preview">
           Amount — {{ transactions[0].amount | number:'1.0-6' }} tez

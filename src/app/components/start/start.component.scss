@@ -3,7 +3,7 @@
   display: flex;
   justify-content: flex-start;
   flex-direction: column;
-  padding-bottom: 8rem;
+  padding-bottom: 2rem;
 }
 #wrapper {
   min-height: calc(100vh - 8rem);
@@ -22,7 +22,7 @@
   display: flex;
   height: 50%;
   width: auto;
-  flex-grow: 0.75;
+  flex-grow: 0.3;
   width: 100%;
   align-items: space-between;
   justify-content: space-between;
@@ -41,7 +41,7 @@
   align-items: center;
   justify-content: center;
 }
-#wrapper > div > div.top-container > div.logo-holder > object.logo {
+#wrapper > div > div.top-container > div.logo-holder > .logo {
   margin-left: -1.5rem;
   margin-top: -1rem;
   width: 28.125rem;
@@ -150,7 +150,7 @@
   display: flex;
   align-items: center;
   text-align: center;
-  color: #5963ff;
+  color: #00AACC;
   margin-top: 3.25rem;
 }
 #menu-container > a > div.content > p {
@@ -205,7 +205,7 @@
 #mobile-menu-container > a H1 {
   font-size: 1rem;
   margin-bottom: 0;
-  color: #5963FF;
+  color: #00AACC;
 }
 div.bottom-container {
   position: fixed;
@@ -222,7 +222,7 @@ img.blue-wave {
   min-width: 100%;
 }
 div.bottom-container > div {
-  background-color: #5963FF;
+  background-color: #00AACC;
   margin-top: -0.5rem;
   overflow: hidden;
   width: 100%;
@@ -253,7 +253,7 @@ div.bottom-container > div {
   }
 }
 @media screen and (max-width: 28.5rem) {
-  #wrapper > div > div.top-container > div.logo-holder > object.logo {
+  #wrapper > div > div.top-container > div.logo-holder > .logo {
     margin-left: 0rem;
     width: 21rem;
     height: 7.5rem;
@@ -278,7 +278,7 @@ div.bottom-container > div {
     margin-right: 0rem;
     margin-left: 0;
   }
-  #wrapper > div > div.top-container > div.logo-holder > object.logo {
+  #wrapper > div > div.top-container > div.logo-holder > .logo {
     margin-top: 0.5rem;
     width: 8.4375rem;
     height: 3rem;
@@ -324,7 +324,7 @@ div.bottom-container > div {
     width: 15rem;
     height: 3.75rem;
   }
-  #wrapper > div > div.top-container > div.logo-holder > object.logo {
+  #wrapper > div > div.top-container > div.logo-holder > .logo {
     width: 25.3125rem;
     height: 9rem;
   }
@@ -339,7 +339,7 @@ div.bottom-container > div {
     width: 12rem;
     height: 3rem;
   }
-  #wrapper > div > div.top-container > div.logo-holder > object.logo {
+  #wrapper > div > div.top-container > div.logo-holder > .logo {
     width: 22.5rem;
     height: 8rem;
   }

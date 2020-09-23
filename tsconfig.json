@@ -19,6 +19,29 @@
       "dom"
     ],
     "module": "esnext",
-    "baseUrl": "./"
+    "baseUrl": "./",
+    "paths": {
+      "stream": [
+        "./node_modules/stream-browserify/index"
+      ],
+      "http": [
+        "./src/empty"
+      ],
+      "https": [
+        "./src/empty"
+      ],
+      "path": [
+        "./src/empty"
+      ],
+      "crypto": [
+        "./src/empty"
+      ],
+      "os": [
+        "./src/empty"
+      ],
+      "fs": [
+        "./src/empty"
+      ],
+    },
   }
 }

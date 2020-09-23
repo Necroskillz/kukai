@@ -125,6 +125,7 @@ export abstract class Account {
   pkh: string;
   pk: string;
   address: string;
+  domain: string;
   constructor(pkh: string, pk: string, address: string) {
     this.balanceXTZ = null;
     this.balanceUSD = null;

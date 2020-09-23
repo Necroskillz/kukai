@@ -1,8 +1,12 @@
 :host {
     height: 6rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 4.5rem;
     width: 100%;
-    ;
+}
+.disclaimer::ng-deep .alert {
+  margin-bottom: 0;
+  padding: 0.25em;
+  border-radius: 0;
 }
 div.middle {
     display: flex;

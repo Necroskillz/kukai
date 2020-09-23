@@ -19,7 +19,7 @@
   font-size: 1rem;
 }
 .kukai-card div.grey-card p.description.blue {
-  color: #5963FF;
+  color: #00AACC;
 }
 .kukai-card div.grey-card p.description.red {
   font-size: 0.875rem;
@@ -139,7 +139,7 @@
 }
 .kukai-card button.next {
   color: white;
-  background: #5963FF;
+  background: #00AACC;
   box-shadow: 0px 0px 1px rgba(89, 99, 255, 0.04), 0px 2px 6px rgba(89, 99, 255, 0.04), 0px 16px 24px rgba(89, 99, 255, 0.24);
 }
 .kukai-card button.back {
@@ -232,16 +232,16 @@
   width: 100%;
 }
 .kukai-card progress::-webkit-progress-value {
-  background-color: #5963FF !important;
+  background-color: #00AACC !important;
   border-radius: 20px;
 }
 .kukai-card progress::-moz-progress-bar {
-  background-color: #5963FF !important;
+  background-color: #00AACC !important;
   border-radius: 20px;
 }
 
 .kukai-card progress {
-  color: #5963FF;
+  color: #00AACC;
   border-radius: 20px;
 }
 /*

@@ -14,9 +14,12 @@ import { Constants } from '../../constants';
 import { LedgerWallet } from '../../services/wallet/wallet';
 import { Account, ImplicitAccount, OriginatedAccount } from '../../services/wallet/wallet';
 import { MessageService } from '../../services/message/message.service';
+import { TezosDomainsService } from '../../services/tezos-domains/tezos-domains.service';
+import { validateDomainName, DomainNameValidationResult } from '@tezos-domains/core';
 
 interface SendData {
   to: string;
+  toDomain?: string;
   amount: number;
   gasLimit: number;
   storageLimit: number;
@@ -25,13 +28,13 @@ const zeroTxParams: DefaultTransactionParams = {
   gas: 0,
   storage: 0,
   fee: 0,
-  burn: 0
+  burn: 0,
 };
 @Component({
   selector: 'app-send',
   templateUrl: './send.component.html',
   encapsulation: ViewEncapsulation.None,
-  styleUrls: ['./send.component.scss']
+  styleUrls: ['./send.component.scss'],
 })
 export class SendComponent implements OnInit {
   /* New variables */
@@ -45,7 +48,7 @@ export class SendComponent implements OnInit {
   defaultTransactionParams: DefaultTransactionParams = zeroTxParams;
 
   // Transaction variables
-  toPkh: string;
+  to: string;
   amount = '';
   fee: string;
   sendFee: string;
@@ -72,6 +75,11 @@ export class SendComponent implements OnInit {
   ledgerError = '';
   showBtn = 'Show More';
 
+  destination: {
+    pkh?: string;
+    domain?: string;
+  };
+
   constructor(
     private translate: TranslateService,
     private modalService: BsModalService,
@@ -82,8 +90,9 @@ export class SendComponent implements OnInit {
     private inputValidationService: InputValidationService,
     private ledgerService: LedgerService,
     private estimateService: EstimateService,
-    private messageService: MessageService
-  ) { }
+    private messageService: MessageService,
+    private tezosDomainsService: TezosDomainsService
+  ) {}
 
   ngOnInit() {
     if (this.walletService.wallet) {
@@ -124,7 +133,9 @@ export class SendComponent implements OnInit {
     if (!this.simSemaphore) {
       this.formInvalid = this.checkInput(true);
       if (!this.formInvalid) {
-        if (!this.amount) { this.amount = '0'; }
+        if (!this.amount) {
+          this.amount = '0';
+        }
         let clearFee = false;
         if (!this.fee) {
           this.fee = this.defaultTransactionParams.fee.toString();
@@ -181,7 +192,7 @@ export class SendComponent implements OnInit {
         this.closeModal();
       } else {
         this.messageService.stopSpinner();
-        this.pwdValid = this.translate.instant('SENDCOMPONENT.WRONGPASSWORD');  // 'Wrong password!';
+        this.pwdValid = this.translate.instant('SENDCOMPONENT.WRONGPASSWORD'); // 'Wrong password!';
       }
     }
   }
@@ -230,7 +241,7 @@ export class SendComponent implements OnInit {
     }
   }
   maxToSend(account: Account): string {
-    if (account && (account instanceof ImplicitAccount)) {
+    if (account && account instanceof ImplicitAccount) {
       let accountBalance = Big(account.balanceXTZ).div(1000000);
       accountBalance = accountBalance.minus(this.fee && Number(this.fee) ? Number(this.fee) : this.defaultTransactionParams.fee);
       if (!this.isMultipleDestinations) {
@@ -246,7 +257,9 @@ export class SendComponent implements OnInit {
   }
   prepTransactions(finalCheck = false): boolean {
     if (!this.checkInput(finalCheck)) {
-      if (!this.toMultipleDestinationsString) { this.toMultipleDestinationsString = ''; }
+      if (!this.toMultipleDestinationsString) {
+        this.toMultipleDestinationsString = '';
+      }
       if (this.isMultipleDestinations) {
         this.transactions = this.toMultipleDestinations;
         this.showTransactions = [];
@@ -258,7 +271,7 @@ export class SendComponent implements OnInit {
       } else {
         const gasLimit = this.gas ? Number(this.gas) : this.defaultTransactionParams.gas;
         const storageLimit = this.storage ? Number(this.storage) : this.defaultTransactionParams.storage;
-        this.transactions = [{ to: this.toPkh, amount: Number(this.amount), gasLimit, storageLimit }];
+        this.transactions = [{ to: this.destination.pkh, toDomain: this.destination.domain, amount: Number(this.amount), gasLimit, storageLimit }];
       }
       return true;
     }
@@ -268,7 +281,8 @@ export class SendComponent implements OnInit {
     let amount = this.amount;
     let fee = this.fee;
     if (!this.walletService.isLedgerWallet()) {
-      this.toPkh = '';
+      this.destination = {};
+      this.to = '';
       this.amount = '';
       this.fee = '';
       this.gas = '';
@@ -277,8 +291,12 @@ export class SendComponent implements OnInit {
       this.toMultipleDestinations = [];
       this.showTransactions = [];
     }
-    if (!amount) { amount = '0'; }
-    if (!fee) { fee = '0'; }
+    if (!amount) {
+      amount = '0';
+    }
+    if (!fee) {
+      fee = '0';
+    }
     this.operationService.transfer(this.activeAccount.address, this.transactions, Number(fee), keys).subscribe(
       async (ans: any) => {
         this.sendResponse = ans;
@@ -308,7 +326,7 @@ export class SendComponent implements OnInit {
         if (this.walletService.isLedgerWallet()) {
           this.messageService.addError('Failed to create transaction', 0);
         }
-      },
+      }
     );
   }
   async requestLedgerSignature() {
@@ -330,21 +348,19 @@ export class SendComponent implements OnInit {
   }
 
   async broadCastLedgerTransaction() {
-    this.operationService.broadcast(this.sendResponse.payload.signedOperation).subscribe(
-      ((ans: any) => {
-        this.sendResponse = ans;
-        if (ans.success && this.activeAccount) {
-          const metadata = { transactions: this.transactions, opHash: ans.payload.opHash };
-          this.coordinatorService.boost(this.activeAccount.address, metadata);
-          if (this.walletService.addressExists(this.transactions[0].to)) {
-            this.coordinatorService.boost(this.transactions[0].to);
-          }
-        } else {
-          this.messageService.addError(this.sendResponse.payload.msg, 0);
+    this.operationService.broadcast(this.sendResponse.payload.signedOperation).subscribe((ans: any) => {
+      this.sendResponse = ans;
+      if (ans.success && this.activeAccount) {
+        const metadata = { transactions: this.transactions, opHash: ans.payload.opHash };
+        this.coordinatorService.boost(this.activeAccount.address, metadata);
+        if (this.walletService.addressExists(this.transactions[0].to)) {
+          this.coordinatorService.boost(this.transactions[0].to);
         }
-        console.log('ans: ' + JSON.stringify(ans));
-      })
-    );
+      } else {
+        this.messageService.addError(this.sendResponse.payload.msg, 0);
+      }
+      console.log('ans: ' + JSON.stringify(ans));
+    });
   }
   toggleDestination() {
     this.defaultTransactionParams = zeroTxParams;
@@ -354,7 +370,8 @@ export class SendComponent implements OnInit {
     this.transactions = [];
     this.toMultipleDestinationsString = '';
     this.formInvalid = '';
-    this.toPkh = '';
+    this.to = '';
+    this.destination = {};
     this.amount = '';
     this.fee = '';
     this.gas = '';
@@ -369,7 +386,8 @@ export class SendComponent implements OnInit {
     return '';
   }
   clearForm() {
-    this.toPkh = '';
+    this.to = '';
+    this.destination = {};
     this.amount = '';
     this.fee = '';
     this.gas = '';
@@ -405,7 +423,7 @@ export class SendComponent implements OnInit {
   }
   checkBalance() {
     if (this.transactions.length > 0) {
-      if (this.activeAccount && (this.activeAccount instanceof ImplicitAccount)) {
+      if (this.activeAccount && this.activeAccount instanceof ImplicitAccount) {
         const max = Big(this.maxToSend(this.activeAccount)).plus(0.000001);
         let amount = Big(0);
         for (const tx of this.transactions) {
@@ -414,7 +432,7 @@ export class SendComponent implements OnInit {
         if (amount.gt(max)) {
           return this.translate.instant('SENDCOMPONENT.TOOHIGHFEEORAMOUNT');
         }
-      } else if (this.activeAccount && (this.activeAccount instanceof OriginatedAccount)) {
+      } else if (this.activeAccount && this.activeAccount instanceof OriginatedAccount) {
         const maxKt = Big(this.maxToSend(this.activeAccount));
         const maxTz = Big(this.maxToSend(this.walletService.wallet.getImplicitAccount(this.activeAccount.pkh))).plus(0.000001);
         let amount = Big(0);
@@ -441,8 +459,25 @@ export class SendComponent implements OnInit {
       this.amount = this.totalAmount().toString();
     }
   }
+  updateTo() {
+    this.destination.pkh = undefined;
+    this.destination.domain = undefined;
+
+    if (validateDomainName(this.to) === DomainNameValidationResult.VALID) {
+      this.destination.domain = this.to;
+
+      this.tezosDomainsService.resolve(this.to).subscribe(address => {
+        if (this.inputValidationService.address(address)) {
+          this.destination.pkh = address;
+          this.updateDefaultValues();
+          this.validateReceiverAddress();
+        }
+      });
+    } else if (this.inputValidationService.address(this.to)) {
+      this.destination.pkh = this.to;
+    }
+  }
   async estimateFees() {
-    console.log('estimate...');
     const prevSimError = this.latestSimError;
     this.latestSimError = '';
     if (this.prepTransactions()) {
@@ -452,7 +487,10 @@ export class SendComponent implements OnInit {
         this.prevEquiClass = equiClass;
         this.simSemaphore++; // Put lock on 'Preview and 'Send max'
         try {
-          const res: DefaultTransactionParams | null = await this.estimateService.estimate(JSON.parse(JSON.stringify(this.transactions)), this.activeAccount.address);
+          const res: DefaultTransactionParams | null = await this.estimateService.estimate(
+            JSON.parse(JSON.stringify(this.transactions)),
+            this.activeAccount.address
+          );
           if (res) {
             console.log(res);
             this.defaultTransactionParams = res;
@@ -472,7 +510,7 @@ export class SendComponent implements OnInit {
       }
     } else {
       this.latestSimError = prevSimError;
-      if (this.isMultipleDestinations ? !this.toMultipleDestinationsString : !this.toPkh) {
+      if (this.isMultipleDestinations ? !this.toMultipleDestinationsString : !this.destination.pkh) {
         this.defaultTransactionParams = zeroTxParams;
         this.updateMaxAmount();
         this.prevEquiClass = '';
@@ -492,18 +530,17 @@ export class SendComponent implements OnInit {
       const numberOfTxs = txs ? txs : this.defaultTransactionParams.customLimits.length;
       const txsLimit = 294 + (this.defaultTransactionParams.reveal ? 0 : 2); // Max transactions in a batch is 296 (294 with a reveal)
       return !txs ? this.numberWithCommas(numberOfTxs + ' / ' + txsLimit) : numberOfTxs <= txsLimit;
-
     }
     return !txs ? '' : true;
   }
   recieverIsKT() {
-    return (this.inputValidationService.address(this.toPkh) && this.toPkh.slice(0, 2) === 'KT');
+    return this.destination.pkh && this.inputValidationService.address(this.destination.pkh) && this.destination.pkh.slice(0, 2) === 'KT';
   }
   senderIsKT() {
-    return (this.activeAccount && (this.activeAccount instanceof OriginatedAccount));
+    return this.activeAccount && this.activeAccount instanceof OriginatedAccount;
   }
   validateReceiverAddress() {
-    if (!this.inputValidationService.address(this.toPkh) && this.toPkh !== '') {
+    if (this.destination.pkh && !this.inputValidationService.address(this.destination.pkh)) {
       this.formInvalid = this.translate.instant('SENDCOMPONENT.INVALIDRECEIVERADDRESS');
     } else if (!this.latestSimError) {
       this.formInvalid = '';
@@ -518,15 +555,14 @@ export class SendComponent implements OnInit {
     } else if (!this.inputValidationService.fee(this.fee)) {
       return this.translate.instant('SENDCOMPONENT.INVALIDFEE');
     } else {
-      return this.checkReceiverAndAmount(this.toPkh, this.amount, finalCheck);
+      return this.checkReceiverAndAmount(this.destination.pkh, this.amount, finalCheck);
     }
   }
   checkReceiverAndAmount(toPkh: string, amount: string, finalCheck: boolean): string {
     console.log(toPkh + ' ' + amount);
     if (!this.inputValidationService.address(toPkh) || toPkh === this.activeAccount.address) {
       return this.translate.instant('SENDCOMPONENT.INVALIDRECEIVERADDRESS');
-    } else if (!this.inputValidationService.amount(amount) ||
-      (finalCheck && (((amount === '0') || amount === '') && (toPkh.slice(0, 3) !== 'KT1')))) {
+    } else if (!this.inputValidationService.amount(amount) || (finalCheck && (amount === '0' || amount === '') && toPkh.slice(0, 3) !== 'KT1')) {
       return this.translate.instant('SENDCOMPONENT.INVALIDAMOUNT');
     } else if (!this.inputValidationService.gas(this.gas)) {
       return this.translate.instant('SENDCOMPONENT.INVALIDGASLIMIT');
@@ -556,13 +592,17 @@ export class SendComponent implements OnInit {
         if (singleSendDataArray.length === 2) {
           const singleSendDataCheckresult = this.checkReceiverAndAmount(singleSendDataArray[0], singleSendDataArray[1], finalCheck);
           if (singleSendDataCheckresult === '') {
-            const gasLimit = this.gas ? Number(this.gas) : this.defaultTransactionParams.customLimits &&
-              this.defaultTransactionParams.customLimits.length > index ?
-              this.defaultTransactionParams.customLimits[index].gasLimit : this.defaultTransactionParams.gas;
-            const storageLimit = this.storage ? Number(this.storage) : this.defaultTransactionParams.customLimits &&
-              this.defaultTransactionParams.customLimits.length > index ?
-              this.defaultTransactionParams.customLimits[index].storageLimit : this.defaultTransactionParams.storage;
-            this.toMultipleDestinations.push({ to: singleSendDataArray[0], amount: Number(singleSendDataArray[1]), gasLimit, storageLimit });
+            const gasLimit = this.gas
+              ? Number(this.gas)
+              : this.defaultTransactionParams.customLimits && this.defaultTransactionParams.customLimits.length > index
+              ? this.defaultTransactionParams.customLimits[index].gasLimit
+              : this.defaultTransactionParams.gas;
+            const storageLimit = this.storage
+              ? Number(this.storage)
+              : this.defaultTransactionParams.customLimits && this.defaultTransactionParams.customLimits.length > index
+              ? this.defaultTransactionParams.customLimits[index].storageLimit
+              : this.defaultTransactionParams.storage;
+            this.toMultipleDestinations.push({ to: singleSendDataArray[0], toDomain: undefined, amount: Number(singleSendDataArray[1]), gasLimit, storageLimit });
           } else {
             this.toMultipleDestinations = [];
             validationError = singleSendDataCheckresult + '. Transaction ' + (index + 1);

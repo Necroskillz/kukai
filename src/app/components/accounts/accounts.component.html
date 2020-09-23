@@ -10,8 +10,13 @@
                 <div class="account-container account-row" (click)="select(impAcc)">
                     <div>
                         <img class="account-icon" src="../../../assets/img/account-icon.svg">
-                        <span class="account-address">{{ formatAddress(impAcc) }}</span>
-                        <img class="copy-icon" src="../../../assets/img/copy-icon.svg" (click)="$event.stopPropagation() ; copy(impAcc)">
+                        <div class="account-info pl-2">
+                            <span class="mb-1" *ngIf="impAcc.domain">{{ impAcc.domain }}</span>
+                            <div class='address-row'>
+                                <span>{{ formatAddress(impAcc) }}</span>
+                                <img class="copy-icon" src="../../../assets/img/copy-icon.svg" (click)="$event.stopPropagation() ; copy(impAcc)">
+                            </div>
+                        </div>
                     </div>
                     <div class="value-container">
                         <div class="values">

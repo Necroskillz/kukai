@@ -8,6 +8,7 @@ import { OperationService } from '../operation/operation.service';
 import { ErrorHandlingPipe } from '../../pipes/error-handling.pipe';
 import { Account } from '../wallet/wallet';
 import Big from 'big.js';
+import { TezosDomainsService } from '../tezos-domains/tezos-domains.service';
 
 export interface ScheduleData {
   pkh: string;
@@ -36,7 +37,8 @@ export class CoordinatorService {
     private balanceService: BalanceService,
     private delegateService: DelegateService,
     private operationService: OperationService,
-    private errorHandlingPipe: ErrorHandlingPipe
+    private errorHandlingPipe: ErrorHandlingPipe,
+    private tezosDomainsService: TezosDomainsService
   ) {}
   startAll() {
     if (this.walletService.wallet) {
@@ -214,6 +216,12 @@ export class CoordinatorService {
       } else {
         console.log('updateAccountData -> getAccount failed ', ans.payload.msg);
       }
+    });
+
+    this.tezosDomainsService.reverseResolve(pkh).subscribe(domain => {
+      const acc = this.walletService.wallet.getAccount(pkh);
+      acc.domain = domain;
+      this.walletService.storeWallet();
     });
   }
   addUnconfirmedOperations(from: string, metadata: any) {

@@ -352,6 +352,7 @@ export class WalletService {
       impAcc.delegate = implicit.delegate;
       impAcc.activitiesCounter = implicit.activitiesCounter;
       impAcc.activities = implicit.activities;
+      impAcc.domain = implicit.domain;
       for (const originated of implicit.originatedAccounts) {
         const origAcc = new OriginatedAccount(
           originated.address,

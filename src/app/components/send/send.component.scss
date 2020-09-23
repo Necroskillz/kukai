@@ -25,7 +25,7 @@ button:focus {
 }
 button.purple {
   color: white;
-  background: #5963FF;
+  background: #00AACC;
   box-shadow: 0px 0px 1px rgba(89, 99, 255, 0.04), 0px 2px 6px rgba(89, 99, 255, 0.04), 0px 16px 24px rgba(89, 99, 255, 0.24);
   transition: margin-top 0.1s ease-in, margin-bottom 0.1s ease-in;
 }
@@ -55,6 +55,9 @@ div.kukai-modal input.text.read-only {
 
 input.custom-textbox {
   padding-left: 0.75rem;
+}
+div.kukai-modal > div.km-content {
+  width: 30rem;
 }
 div.kukai-modal div.advanced-form input.text::placeholder {
   color: black;

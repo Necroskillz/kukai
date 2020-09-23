@@ -4,7 +4,7 @@
   display: flex;
   justify-content: flex-start;
   flex-direction: column;
-  background: #5963FF;
+  background: #00AACC;
 }
 #wrapper {
   min-height: calc(100% - 8rem);
@@ -27,7 +27,7 @@ a.view-all {
   font-weight: normal;
   font-size: 0.875rem;
   line-height: 1rem;
-  color: #5963ff;
+  color: #00AACC;
 }
 .main-container {
   width: 25rem;
@@ -208,7 +208,7 @@ img.copy-icon {
   font-weight: 500;
 }
 #operations-container div span.blue {
-  color: #5963FF;
+  color: #00AACC;
   font-weight: 500;
 }
 #operations-container div span.black {
@@ -230,6 +230,9 @@ div.line:last-child {
 .truncate-overflow {
   overflow: hidden;
   position: relative;
+}
+.counterparty-label {
+  white-space: nowrap;
 }
 @media screen and (max-width: 70rem) {
   #wrapper {
